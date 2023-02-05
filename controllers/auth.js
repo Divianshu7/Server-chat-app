@@ -42,7 +42,7 @@ export const login = async (req, res, next) => {
 
         }
     } catch (err) {
-        console.log('registeration error ', err)
+        console.log('registeration error==> ', err)
         next(err)
     }
 }
