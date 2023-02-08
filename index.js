@@ -2,6 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import mongoose from 'mongoose'
 import { readdirSync } from 'fs'
+import socket from 'socket.io'
 const app = express()
 require('dotenv').config()
 app.use(cors())
@@ -23,4 +24,24 @@ mongoose.connect(process.env.MONGO_URL, {
 readdirSync('./routes').map((r) => app.use('/api', require(`./routes/${r}`)))
 const server = app.listen(process.env.PORT, () => {
     console.log(`Serverer Started on port ${process.env.PORT}`)
+})
+// const socket = new Socket()
+const io = socket(server, {
+    cors: {
+        origin: 'http://localhost:3000',
+        credentials: true
+    }
+})
+global.onlineUsers = new Map()
+io.on('connection', (socket) => {
+    global.chatSocket = socket;
+    socket.on('add-user', (userId) => {
+        onlineUsers.set(userId, socket.id)
+    })
+    socket.on('send-msg', (data) => {
+        const sendUserSocket = onlineUsers.get(data.to)
+        if (sendUserSocket) {
+            socket.to(sendUserSocket).emit('msg-recieve', data.message)
+        }
+    })
 })

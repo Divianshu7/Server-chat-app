@@ -46,3 +46,30 @@ export const login = async (req, res, next) => {
         next(err)
     }
 }
+export const setAvatar = async (req, res, next) => {
+    try {
+        const userId = req.params.userId
+        const avatarImage = req.body.image
+        const userData = await User.findByIdAndUpdate(userId, {
+            isAvatarImageSet: true,
+            avatarImage
+        }, { new: true }).exec()
+        // console.log(userData)
+        return res.json({ isSet: userData.isAvatarImageSet, image: userData.avatarImage })
+
+    } catch (err) {
+        console.log('saving avatar error ', err)
+        next(err)
+    }
+}
+export const allUsers = async (req, res, next) => {
+    try {
+        const users = await User.find({ _id: { $ne: req.params.userId } }).select([
+            'email', 'username', 'avatarImage', '_id'
+        ])
+        return res.json(users)
+    } catch (err) {
+        console.log('getting contacts error ', err)
+        next(err)
+    }
+}
